@@ -2,9 +2,7 @@
 using RinhaDeBackend.Models.Requests;
 using RinhaDeBackend.Models.Responses;
 using Dapper;
-using Microsoft.Data.SqlClient;
 using Npgsql;
-using Azure.Core;
 
 namespace RinhaDeBackend.Controllers
 {
