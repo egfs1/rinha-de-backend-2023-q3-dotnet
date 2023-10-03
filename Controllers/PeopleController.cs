@@ -1,11 +1,22 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RinhaDeBackend.Models.Requests;
 using RinhaDeBackend.Models.Responses;
+using Dapper;
+using Microsoft.Data.SqlClient;
+using Npgsql;
+using Azure.Core;
 
 namespace RinhaDeBackend.Controllers
 {
     public class PeopleController : ControllerBase
     {
+        private readonly string? connectionString;
+
+        public PeopleController(IConfiguration configuration)
+        {
+            connectionString = configuration.GetConnectionString("DefaultConnection");
+        }
+
         [HttpPost]
         [Route("pessoas")]
         public void CreatePerson([FromBody] CreatePersonRequest request)
@@ -19,10 +30,27 @@ namespace RinhaDeBackend.Controllers
                 return;
             }
 
-            Guid id = Guid.NewGuid();
+            Guid Id = Guid.NewGuid();
 
-            HttpContext.Response.Headers.Location = $"/pessoas/{id}";
-            HttpContext.Response.StatusCode = 201;
+            string query = "INSERT INTO pessoas (id,apelido,nome,nascimento,stack) VALUES (@Id,@Apelido,@Nome,@Nascimento,@Stack) ON CONFLICT (apelido) DO NOTHING;";
+
+            using var connection = new NpgsqlConnection(connectionString);
+
+            connection.Open();
+
+            int response = connection.Execute(query, new { Id, request.Apelido, request.Nome, request.Nascimento, request.Stack });
+            
+            connection.Close();
+
+            if(response != 0)
+            {
+                HttpContext.Response.Headers.Location = $"/pessoas/{Id}";
+                HttpContext.Response.StatusCode = 201;
+            }
+            else
+            {
+                HttpContext.Response.StatusCode = 422;
+            }
 
             return;
         }
@@ -31,9 +59,22 @@ namespace RinhaDeBackend.Controllers
         [Route("pessoas/{id}")]
         public object? GetPersonById(string id)
         {
-            HttpContext.Response.StatusCode = 200;
+            string query = "SELECT * FROM pessoas WHERE id=@id";
 
-            return new PersonResponse();
+            using var connection = new NpgsqlConnection(connectionString);
+
+            connection.Open();
+
+            PersonResponse? response = connection.Query<PersonResponse>(query, new { id = new Guid(id) }).FirstOrDefault();
+            
+            connection.Close();
+
+            if (response != null)
+                HttpContext.Response.StatusCode = 200;
+            else
+                HttpContext.Response.StatusCode = 404;
+
+            return response;
         }
 
         [HttpGet]
@@ -46,18 +87,38 @@ namespace RinhaDeBackend.Controllers
                 return null;
             }
 
+            string query = "SELECT * FROM pessoas WHERE nome ILIKE @Term OR apelido ILIKE @Term OR search ILIKE @Term";
+
+            using var connection = new NpgsqlConnection(connectionString);
+
+            connection.Open();
+
+            List<PersonResponse> response = connection.Query<PersonResponse>(query, new { Term = $"%{request.T}%" }).ToList();
+
+            connection.Close();
+
             HttpContext.Response.StatusCode = 200;
 
-            return new List<PersonResponse>();
+            return response;
         }
 
         [HttpGet]
         [Route("contagem-pessoas")]
         public object GetPeopleCount()
         {
+            string query = "SELECT COUNT(*) FROM pessoas;";
+
+            using var connection = new NpgsqlConnection(connectionString);
+
+            connection.Open();
+
+            int response = connection.Query<int>(query).First();
+
+            connection.Close();
+
             HttpContext.Response.StatusCode = 200;
 
-            return 1;
+            return response;
         }
     }
 }

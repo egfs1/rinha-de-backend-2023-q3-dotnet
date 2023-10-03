@@ -2,6 +2,6 @@
 {
     public class GetPeopleByTermRequest
     {
-        public string T { get; set; }
+        public string T { get; set; } = null!;
     }
 }

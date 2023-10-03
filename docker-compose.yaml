@@ -7,6 +7,8 @@ services:
         environment:
             POSTGRES_PASSWORD: postgres
             POSTGRES_DB: rinha
+        ports:
+            - '5432:5432'
         volumes:
             - ./init.sql:/docker-entrypoint-initdb.d/init.sql
         deploy:
@@ -21,7 +23,7 @@ services:
         depends_on:
             - db
         environment:
-            - CONNECTION_STRING=Server=localhost;Port=5432;Database=rinha;User Id=postgres;Password=postgres;       
+            - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=rinha;Username=postgres;Password=postgres;
         ports:
             - '3000:80'   
         deploy:

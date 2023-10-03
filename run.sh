@@ -1,3 +1,2 @@
-docker-compose rm -f
-docker-compose down --volumes
+docker-compose down -v --rmi local
 docker-compose up --build
