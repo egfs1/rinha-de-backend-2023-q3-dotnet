@@ -1,0 +1,37 @@
+version: '3.5'
+
+services:
+    db:
+        image: postgres:latest
+        hostname: db
+        environment:
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_DB: rinha
+        volumes:
+            - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.8'
+                    memory: '1.5GB'
+
+    api1: &api
+        build: .
+        hostname: api1
+        depends_on:
+            - db
+        environment:
+            - CONNECTION_STRING=Server=localhost;Port=5432;Database=rinha;User Id=postgres;Password=postgres;       
+        ports:
+            - '3000:80'   
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.25'
+                    memory: '0.5GB'
+
+    api2:
+        <<: *api
+        hostname: api2
+        ports:
+            - '3001:80'
