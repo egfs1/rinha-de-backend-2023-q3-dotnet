@@ -1,0 +1,51 @@
+name: gatling
+
+on:
+  push:
+    branches:
+        - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Docker build
+        run: docker build -t egfs/rinhadebackend-2023-q3-api .
+
+      - name: Docker compose
+        run: docker-compose up -d
+
+      - name: Load test
+        run: |
+          git clone --single-branch --quiet https://github.com/zanfranceschi/rinha-de-backend-2023-q3
+          cd rinha-de-backend-2023-q3
+          wget https://repo1.maven.org/maven2/io/gatling/highcharts/gatling-charts-highcharts-bundle/3.9.5/gatling-charts-highcharts-bundle-3.9.5-bundle.zip
+          unzip gatling-charts-highcharts-bundle-3.9.5-bundle.zip
+          cd gatling-charts-highcharts-bundle-3.9.5
+          ./bin/gatling.sh \
+            -rm local \
+            -s RinhaBackendSimulation \
+            -rd "DESCRICAO" \
+            -rf $WORKSPACE/user-files/results \
+            -sf $WORKSPACE/user-files/simulations \
+            -rsf $WORKSPACE/user-files/resources
+          echo GATLING_OUTPUT_FOLDER=$(ls $WORKSPACE/user-files/results | sort | head -n 1) >> $GITHUB_ENV
+        env:
+          WORKSPACE: ${{ github.workspace }}/rinha-de-backend-2023-q3/stress-test
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ${{ github.workspace }}/rinha-de-backend-2023-q3/stress-test/user-files/results/${{ env.GATLING_OUTPUT_FOLDER }}
+          destination_dir: ${{ env.GATLING_OUTPUT_FOLDER }}
+
+      - name: Print deployed
+        run: |
+          echo "Deployed at https://egfs1.github.io/rinhadebackend2023/${{ env.GATLING_OUTPUT_FOLDER }}"
+          echo "and printing to summary:"
+          echo "Deployed at [https://egfs1.github.io/rinhadebackend2023/${{ env.GATLING_OUTPUT_FOLDER }}](https://egfs1.github.io/rinhadebackend2023/${{ env.GATLING_OUTPUT_FOLDER }})" >> "${GITHUB_STEP_SUMMARY}"
