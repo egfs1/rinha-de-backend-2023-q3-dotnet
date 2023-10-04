@@ -15,3 +15,7 @@ CREATE TABLE pessoas(
 	stack VARCHAR(32)[] NULL,
 	search TEXT GENERATED ALWAYS AS (concatenate_names(apelido, nome, stack)) STORED
 );
+
+CREATE INDEX apelido_index_idx ON pessoas USING gin (apelido gin_trgm_ops);
+
+CREATE INDEX search_index_idx ON pessoas USING gin (search gin_trgm_ops);

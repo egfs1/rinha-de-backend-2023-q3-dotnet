@@ -114,7 +114,7 @@ namespace RinhaDeBackend.Controllers
                 return null;
             }
             
-            string query = "SELECT * FROM pessoas WHERE nome ILIKE @Term OR apelido ILIKE @Term OR search ILIKE @Term";
+            string query = "SELECT * FROM pessoas WHERE search ILIKE @Term";
 
             try
             {

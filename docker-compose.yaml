@@ -4,7 +4,7 @@ services:
     db:
         image: postgres:latest
         hostname: db
-        command: postgres -c 'max_connections=450' -c 'shared_buffers=256MB'
+        command: postgres -c 'max_connections=450' -c 'shared_buffers=256MB' -c 'work_mem=16MB' -c 'maintenance_work_mem=256MB'
         environment:
             POSTGRES_PASSWORD: postgres
             POSTGRES_DB: rinha
@@ -15,8 +15,8 @@ services:
         deploy:
             resources:
                 limits:
-                    cpus: '0.8'
-                    memory: '1GB'
+                    cpus: '1'
+                    memory: '1.8GB'
 
     api1: &api
         build: .
@@ -30,8 +30,8 @@ services:
         deploy:
             resources:
                 limits:
-                    cpus: '0.25'
-                    memory: '0.75GB'
+                    cpus: '0.2'
+                    memory: '0.5GB'
 
     api2:
         <<: *api
@@ -51,5 +51,5 @@ services:
         deploy:
           resources:
             limits:
-              cpus: '0.2'
-              memory: '0.5GB'
+              cpus: '0.1'
+              memory: '0.2GB'
