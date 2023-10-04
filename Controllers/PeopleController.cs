@@ -13,7 +13,7 @@ namespace RinhaDeBackend.Controllers
         public PeopleController(IConfiguration configuration)
         {
             NpgsqlConnectionStringBuilder builder = new NpgsqlConnectionStringBuilder(configuration.GetConnectionString("DefaultConnection"));
-            builder.MaxPoolSize = 300;
+            builder.MaxPoolSize = 450;
             builder.ConnectionLifetime = 120;
             connectionString = builder.ConnectionString;
         }

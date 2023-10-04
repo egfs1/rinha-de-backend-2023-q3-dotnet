@@ -46,6 +46,6 @@ jobs:
 
       - name: Print deployed
         run: |
-          echo "Deployed at https://egfs1.github.io/rinhadebackend2023/${{ env.GATLING_OUTPUT_FOLDER }}"
+          echo "Deployed at https://egfs1.github.io/rinha-de-backend-2023-q3-dotnet/${{ env.GATLING_OUTPUT_FOLDER }}"
           echo "and printing to summary:"
-          echo "Deployed at [https://egfs1.github.io/rinhadebackend2023/${{ env.GATLING_OUTPUT_FOLDER }}](https://egfs1.github.io/rinhadebackend2023/${{ env.GATLING_OUTPUT_FOLDER }})" >> "${GITHUB_STEP_SUMMARY}"
+          echo "Deployed at [https://egfs1.github.io/rinha-de-backend-2023-q3-dotnet/${{ env.GATLING_OUTPUT_FOLDER }}](https://egfs1.github.io/rinha-de-backend-2023-q3-dotnet/${{ env.GATLING_OUTPUT_FOLDER }})" >> "${GITHUB_STEP_SUMMARY}"
