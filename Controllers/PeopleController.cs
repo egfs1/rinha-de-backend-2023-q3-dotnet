@@ -22,33 +22,27 @@ namespace RinhaDeBackend.Controllers
         [Route("pessoas")]
         public void CreatePerson([FromBody] CreatePersonRequest request)
         {
-            if(!ModelState.IsValid)
+            if(!ModelState.IsValid || !request.IsAttributesValid())
             {
                 if (request == null)
                     HttpContext.Response.StatusCode = 400;
                 else
                     HttpContext.Response.StatusCode = 422;
                 return;
-            }
-
-            if (request.Apelido.Length == 0 || request.Apelido.Length > 32 || request.Nome.Length == 0 || request.Nome.Length > 100 || request.Nascimento.Length != 10 || (request.Stack != null && request.Stack.Any(str => str.Length > 32)))
-            {
-                HttpContext.Response.StatusCode = 422;
-                return;
-            }
-                    
+            }       
 
             Guid Id = Guid.NewGuid();
 
-            string query = "INSERT INTO pessoas (id,apelido,nome,nascimento,stack) VALUES (@Id,@Apelido,@Nome,@Nascimento,@Stack) ON CONFLICT (apelido) DO NOTHING;";
-            
+            string Search = $"{request.Apelido} {request.Nome} {string.Join(' ', request.Stack ?? Enumerable.Empty<string>())}";
+
+            string query = "INSERT INTO pessoas (id, apelido, nome, nascimento, stack, search) SELECT @Id, @Apelido, @Nome, @Nascimento, @Stack, @Search WHERE NOT EXISTS (SELECT 1 FROM pessoas WHERE apelido = @Apelido);";
             try
             {
                 using var connection = new NpgsqlConnection(connectionString);
 
                 connection.Open();
 
-                int response = connection.Execute(query, new { Id, request.Apelido, request.Nome, request.Nascimento, request.Stack });
+                int response = connection.Execute(query, new { Id, request.Apelido, request.Nome, request.Nascimento, request.Stack, Search });
 
                 connection.Close();
 
@@ -108,7 +102,7 @@ namespace RinhaDeBackend.Controllers
         [Route("pessoas")]
         public object? GetPeopleByTerm([FromQuery] GetPeopleByTermRequest request)
         {
-            if (!ModelState.IsValid || request.T.Length == 0)
+            if (!ModelState.IsValid || !request.IsAttributesValid())
             {
                 HttpContext.Response.StatusCode = 400;
                 return null;
