@@ -29,7 +29,7 @@ namespace RinhaDeBackend.Controllers
                 else
                     HttpContext.Response.StatusCode = 422;
                 return;
-            }       
+            }
 
             Guid Id = Guid.NewGuid();
 
@@ -108,7 +108,7 @@ namespace RinhaDeBackend.Controllers
                 return null;
             }
             
-            string query = "SELECT * FROM pessoas WHERE search ILIKE @Term";
+            string query = "SELECT * FROM pessoas WHERE search ILIKE @Term LIMIT 50";
 
             try
             {
